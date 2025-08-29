@@ -1,0 +1,16 @@
+# These rules detect ADB devices using `adb-probe`, a small C application written by Lauriethefish.
+# This avoids needing to list individual devices.
+# Skip this section below if this device is not connected by USB.
+SUBSYSTEM!="usb", GOTO="android_usb_rules_end"
+
+# Skip the section if the device is already marked as ADB accessible
+ENV{adb_user}=="yes", GOTO"android_usb_rules_end"
+
+LABEL="android_usb_rules_begin"
+
+# Mark device as accessible by ADB if the probe detects a valid ADB interface.
+PROGRAM="/usr/lib/udev/adb-probe $attr{busnum} $attr{devnum}", RESULT=="1", ENV{adb_user}="yes"
+# Enable device as a user device if found
+ENV{adb_user}=="yes", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+
+LABEL="android_usb_rules_end"
